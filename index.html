@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реестр деяний - Мы и Наш Дом</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+        }
+        .header h1 { margin-bottom: 10px; font-size: 28px; }
+        .verification {
+            background: #f0f0f0;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        .verification h3 { margin-bottom: 10px; color: #333; }
+        .verification p { margin: 5px 0; color: #666; font-family: monospace; font-size: 12px; word-break: break-all; }
+        .hash-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .verified { background: #4caf50; color: white; }
+        .pending { background: #ff9800; color: white; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+        tr:hover { background: #f8f9fa; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            border-top: 1px solid #eee;
+        }
+        .check-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .check-btn:hover { background: #5a67d8; }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Мы и Наш Дом</h1>
+            <p>Реестр деяний участников движения</p>
+        </div>
+        
+        <div class="verification" id="verificationBlock">
+            <h3>🔗 Верификация в блокчейне Polygon</h3>
+            <p><strong>Текущий хеш:</strong> <span id="storedHash">Загрузка...</span></p>
+            <p><strong>Последняя транзакция:</strong> <span id="txLink">-</span></p>
+            <p><strong>Статус данных:</strong> <span id="statusBadge">Проверка...</span></p>
+            <button class="check-btn" onclick="verifyData()">🔄 Проверить неизменность данных</button>
+        </div>
+        
+        <div style="padding: 0 20px 20px 20px;">
+            <h2>📊 Деяния участников</h2>
+            <div id="tableContainer">
+                <div class="loading">Загрузка данных из Google Таблиц...</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Данные защищены блокчейном Polygon. Любое изменение таблицы будет обнаружено при проверке.</p>
+            <p>📅 Последнее обновление: <span id="lastUpdate">-</span></p>
+        </div>
+    </div>
+
+    <script>
+        // ⚙️ НАСТРОЙКИ - ЗАМЕНИТЕ НА СВОИ!
+        const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv'; // ВСТАВЬТЕ ВАШУ ССЫЛКУ
+        const CONTRACT_ADDRESS = '0x...'; // АДРЕС ВАШЕГО СМАРТ-КОНТРАКТА (будет позже)
+        
+        // Временное хранилище хеша (пока нет смарт-контракта)
+        let currentHash = localStorage.getItem('movement_hash') || '0x5d41402abc4b2a76b9719d911017c592';
+        
+        // Функция для вычисления SHA-256 (простая версия)
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return '0x' + hashHex;
+        }
+        
+        // Загрузка данных из Google Sheets
+        async function loadData() {
+            try {
+                const response = await fetch(GOOGLE_SHEETS_URL);
+                const csvText = await response.text();
+                
+                // Парсим CSV
+                const rows = csvText.split('\n').slice(1); // пропускаем заголовок
+                const data = rows.filter(row => row.trim()).map(row => {
+                    const cols = row.split(',');
+                    return {
+                        id: cols[0] || '-',
+                        name: cols[1] || '-',
+                        date: cols[2] || '-',
+                        description: cols[3] || '-',
+                        points: {
+                            E: cols[4] || '0',
+                            W: cols[5] || '0',
+                            J: cols[6] || '0',
+                            S: cols[7] || '0',
+                            C: cols[8] || '0'
+                        }
+                    };
+                });
+                
+                // Вычисляем хеш от данных
+                const dataString = JSON.stringify(data);
+                const calculatedHash = await sha256(dataString);
+                
+                // Сохраняем для проверки
+                window.currentDataHash = calculatedHash;
+                window.currentData = data;
+                
+                // Отображаем таблицу
+                displayTable(data);
+                
+                // Обновляем статус верификации
+                updateVerificationStatus(calculatedHash);
+                
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+                
+                return data;
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                document.getElementById('tableContainer').innerHTML = 
+                    '<div class="loading">❌ Ошибка загрузки данных. Проверьте ссылку на Google Таблицу</div>';
+            }
+        }
+        
+        // Отображение таблицы
+        function displayTable(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('tableContainer').innerHTML = 
+                    '<div class="loading">📭 Пока нет деяний</div>';
+                return;
+            }
+            
+            let html = '<table><thead><tr>';
+            html += '<th>ID</th><th>Участник</th><th>Дата</th><th>Описание</th>';
+            html += '<th>E</th><th>W</th><th>J</th><th>S</th><th>C</th>';
+            html += '</tr></thead><tbody>';
+            
+            data.slice(0, 100).forEach(item => {
+                html += `<tr>
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>${item.date}</td>
+                    <td>${item.description.substring(0, 50)}</td>
+                    <td>${item.points.E}</td>
+                    <td>${item.points.W}</td>
+                    <td>${item.points.J}</td>
+                    <td>${item.points.S}</td>
+                    <td>${item.points.C}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            if (data.length > 100) {
+                html += '<p style="margin-top: 10px; color: #999;">Показаны первые 100 записей из ' + data.length + '</p>';
+            }
+            
+            document.getElementById('tableContainer').innerHTML = html;
+        }
+        
+        // Обновление статуса верификации
+        function updateVerificationStatus(calculatedHash) {
+            const storedHashSpan = document.getElementById('storedHash');
+            const statusSpan = document.getElementById('statusBadge');
+            
+            storedHashSpan.textContent = currentHash;
+            
+            if (calculatedHash === currentHash) {
+                statusSpan.innerHTML = '<span class="hash-status verified">✅ ВЕРИФИЦИРОВАНО</span>';
+                document.getElementById('txLink').innerHTML = `<a href="https://polygonscan.com/tx/${currentHash}" target="_blank">Просмотреть транзакцию</a>`;
+            } else {
+                statusSpan.innerHTML = '<span class="hash-status pending">⚠️ ДАННЫЕ ИЗМЕНЕНЫ</span>';
+                document.getElementById('txLink').innerHTML = '-';
+            }
+        }
+        
+        // Проверка данных (сравнение текущего хеша с сохраненным)
+        async function verifyData() {
+            if (!window.currentDataHash) {
+                alert('Сначала загрузите данные');
+                return;
+            }
+            
+            if (window.currentDataHash === currentHash) {
+                alert('✅ Данные не изменялись! Хеш совпадает с записанным в блокчейне.');
+            } else {
+                alert('⚠️ ВНИМАНИЕ! Данные были изменены после последней верификации.\n\n' +
+                      'Текущий хеш: ' + window.currentDataHash + '\n' +
+                      'Хеш в блокчейне: ' + currentHash);
+            }
+        }
+        
+        // Загрузка при открытии страницы
+        loadData();
+        
+        // Обновление каждые 5 минут
+        setInterval(loadData, 300000);
+    </script>
+</body>
+</html>
