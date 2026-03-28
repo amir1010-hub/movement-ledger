@@ -365,22 +365,35 @@
          html += '<th>E</th><th>W</th><th>J</th><th>S</th><th>C</th><th>Ссылка на подтверждение</th><th>Дата верификации</th><th>Рейтинг</th>';
          html += '</tr></thead><tbody>';
          
-         data.slice(0, 100).forEach(item => {
-             html += '<tr>
-                 <td>${escapeHtml(item.id)}</td>
-                 <td>${escapeHtml(item.name)}</td>
-                 <td>${escapeHtml(item.date)}</td>
-                 <td>${escapeHtml(item.description.substring(0, 50))}</td>
-                 <td>${item.E}</td>
-                 <td>${item.W}</td>
-                 <td>${item.J}</td>
-                 <td>${item.S}</td>
-                 <td>${item.C}</td>
-				 <td>${item.URL}</td>
-				 <td>${item.DATE_VER}</td>
-				 <td>${item.RATE}</td>
-             </tr>';
-         });
+data.slice(0, 100).forEach(item => {
+    // Форматируем RATE
+    let rateDisplay = '';
+    if (typeof item.RATE === 'number' && !isNaN(item.RATE)) {
+        rateDisplay = item.RATE.toLocaleString('ru-RU', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 10
+        });
+    } else {
+        rateDisplay = escapeHtml(String(item.RATE || '0'));
+    }
+    
+    html += `
+        <tr>
+            <td>${escapeHtml(String(item.id))}</td>
+            <td>${escapeHtml(item.name)}</td>
+            <td>${escapeHtml(item.date)}</td>
+            <td>${escapeHtml(item.description.substring(0, 50))}</td>
+            <td>${escapeHtml(String(item.E || '0'))}</td>
+            <td>${escapeHtml(String(item.W || '0'))}</td>
+            <td>${escapeHtml(String(item.J || '0'))}</td>
+            <td>${escapeHtml(String(item.S || '0'))}</td>
+            <td>${escapeHtml(String(item.C || '0'))}</td>
+            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(item.URL || '')}</td>
+            <td>${escapeHtml(item.DATE_VER || '')}</td>
+            <td class="rate-value">${rateDisplay}</td>
+        </tr>
+    `;
+});
          
          html += '</tbody></table>';
          if (data.length > 100) {
@@ -389,7 +402,17 @@
          
          document.getElementById('tableContainer').innerHTML = html;
      }
-	 
+
+	 function escapeHtml(text) {
+    if (text === undefined || text === null) return '';
+    const str = String(text);
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
      function updateVerificationStatus(currentHash, blockchainHash) {
          const statusSpan = document.getElementById('statusBadge');
          
