@@ -337,7 +337,32 @@ async function loadData() {
             }
         }
         console.log('Индекс колонки Рейтинг:', rateIndex);
+              
+		// ========== ДИАГНОСТИКА ==========
+        console.log('=== ДИАГНОСТИКА CSV ===');
+        console.log('Заголовки:', rows[0]);
         
+        // Показываем первые 3 строки данных
+        for (let r = 1; r < Math.min(rows.length, 4); r++) {
+            const testCols = rows[r].split(',');
+            console.log(`\n--- Строка ${r} ---`);
+            console.log('Кол-во колонок:', testCols.length);
+            console.log('Колонка 0 (ID):', testCols[0]);
+            console.log('Колонка 1 (ФИО):', testCols[1]);
+            console.log('Колонка 2 (дата):', testCols[2]);
+            console.log('Колонка 3 (описание):', testCols[3]);
+            console.log('Колонка 4 (E):', testCols[4]);
+            console.log('Колонка 5 (W):', testCols[5]);
+            console.log('Колонка 6 (J):', testCols[6]);
+            console.log('Колонка 7 (S):', testCols[7]);
+            console.log('Колонка 8 (C):', testCols[8]);
+            console.log('Колонка 9 (URL):', testCols[9]);
+            console.log('Колонка 10 (DATE_VER):', testCols[10]);
+            console.log('Колонка 11 (Рейтинг):', testCols[11]);
+            if (testCols.length > 12) console.log('Колонка 12:', testCols[12]);
+            if (testCols.length > 13) console.log('Колонка 13:', testCols[13]);
+        }
+        // ========== КОНЕЦ ДИАГНОСТИКИ ==========
         const data = [];
         for (let i = 1; i < rows.length; i++) {
             const cols = rows[i].split(',');
