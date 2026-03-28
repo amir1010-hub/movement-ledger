@@ -304,14 +304,14 @@
          try {
              const response = await fetch(CSV_URL);
              const csvText = await response.text();
-
+             
              // Парсим CSV
              const rows = csvText.split('\n').filter(row => row.trim());
              if (rows.length < 2) {
                  document.getElementById('tableContainer').innerHTML = '<div class="loading-text">📭 Пока нет деяний</div>';
                  return [];
              }
-
+             
              const data = [];
              for (let i = 1; i < rows.length; i++) {
                  const cols = rows[i].split(',');
@@ -326,27 +326,24 @@
                              W: cols[5] || '0',
                              J: cols[6] || '0',
                              S: cols[7] || '0',
-                             C: cols[8] || '0',
-							 URL: cols[7] || '0',
-							 DATE_VER: cols[7] || '0',
-						 	 RATE: cols[7] || '0'
+                             C: cols[8] || '0'
                          }
                      });
                  }
              }
-
+             
              displayTable(data);
              document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
-
+             
              // Вычисляем хеш данных
              const dataString = JSON.stringify(data);
              currentDataHash = await sha256(dataString);
-
+             
              // Сравниваем с хешем из блокчейна
              if (window.blockchainHash) {
                  updateVerificationStatus(currentDataHash, window.blockchainHash);
              }
-
+             
              return data;
          } catch (error) {
              console.error('Ошибка загрузки CSV:', error);
@@ -377,9 +374,6 @@
                  <td>${item.points.J}</td>
                  <td>${item.points.S}</td>
                  <td>${item.points.C}</td>
-				 <td>${item.points.URL}</td>
-				 <td>${item.points.DATE_VER}</td>
-				 <td>${item.points.RATE}</td>
              </tr>`;
          });
          
