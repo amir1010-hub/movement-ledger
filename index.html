@@ -299,61 +299,61 @@
          }
      }
      
-    // Загрузка данных из Google Таблицы (JSON формат)
-async function loadData() {
-    try {
-        // Если используете JSON (рекомендуется)
-       // const JSON_URL = 'https://script.google.com/macros/s/AKfycbycjiSBRPyZTYYvmaGzR1eKm954hS_AXzjcvSFta68undZNWHfJWpcHNeaI3Lle4oVx/exec'; // ВАША ССЫЛКА НА ВЕБ-ПРИЛОЖЕНИЕ
-        
-        const response = await fetch(JSON_URL);
-        if (!response.ok) throw new Error('Данные не загружены');
-        
-        const data = await response.json();
-        
-        if (!data || data.length === 0) {
-            document.getElementById('tableContainer').innerHTML = '<div class="loading-text">📭 Пока нет деяний</div>';
-            return [];
-        }
-        
-        // Преобразуем в нужный формат
-        const formattedData = data.map((row, idx) => ({
-            id: row.ID || row.id || idx + 1,
-            name: row.ФИО || row.name || '-',
-            date: row.Дата || row.date || '-',
-            description: row.Описание || row.description || '-',
-            points: {
-                E: row.E || row['Энергия'] || '0',
-                W: row.W || row['Благо'] || '0',
-                J: row.J || row['Справедливость'] || '0',
-                S: row.S || row['Экология'] || '0',
-                C: row.C || row['Культура'] || '0',
-				URL: row.URL || row['Ссылка на подтверждение'] || '0',
-				DATE_VERIF: row.DATE || row['Дата верификации'] || '0',
-				Rate: row.Rate || row['Рейтинг'] || '0'
-            }
-        }));
-        
-        displayTable(formattedData);
-        document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
-        
-        // Вычисляем хеш данных
-        const dataString = JSON.stringify(formattedData);
-        currentDataHash = await sha256(dataString);
-        console.log('Хеш таблицы:', currentDataHash);
-        
-        if (window.blockchainHash) {
-            updateVerificationStatus(currentDataHash, window.blockchainHash);
-        }
-        
-        return formattedData;
-        
-    } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        document.getElementById('tableContainer').innerHTML = 
-            '<div class="loading-text">❌ Ошибка загрузки данных. Проверьте ссылку на JSON</div>';
-        return [];
-    }
-}
+     // Загрузка CSV данных
+     async function loadData() {
+         try {
+             const response = await fetch(CSV_URL);
+             const csvText = await response.text();
+
+             // Парсим CSV
+             const rows = csvText.split('\n').filter(row => row.trim());
+             if (rows.length < 2) {
+                 document.getElementById('tableContainer').innerHTML = '<div class="loading-text">📭 Пока нет деяний</div>';
+                 return [];
+             }
+
+             const data = [];
+             for (let i = 1; i < rows.length; i++) {
+                 const cols = rows[i].split(',');
+                 if (cols.length >= 5) {
+                     data.push({
+                         id: cols[0] || i,
+                         name: cols[1] || '-',
+                         date: cols[2] || '-',
+                         description: cols[3] || '-',
+                         points: {
+                             E: cols[4] || '0',
+                             W: cols[5] || '0',
+                             J: cols[6] || '0',
+                             S: cols[7] || '0',
+                             C: cols[8] || '0',
+							 URL: cols[7] || '0',
+							 DATE_VER: cols[7] || '0',
+						 	 RATE: cols[7] || '0'
+                         }
+                     });
+                 }
+             }
+
+             displayTable(data);
+             document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+
+             // Вычисляем хеш данных
+             const dataString = JSON.stringify(data);
+             currentDataHash = await sha256(dataString);
+
+             // Сравниваем с хешем из блокчейна
+             if (window.blockchainHash) {
+                 updateVerificationStatus(currentDataHash, window.blockchainHash);
+             }
+
+             return data;
+         } catch (error) {
+             console.error('Ошибка загрузки CSV:', error);
+             document.getElementById('tableContainer').innerHTML = 
+                 '<div class="loading-text">❌ Ошибка загрузки данных. Проверьте ссылку на CSV файл</div>';
+         }
+     }
      
      function displayTable(data) {
          if (!data || data.length === 0) {
