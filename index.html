@@ -326,7 +326,10 @@
                              W: cols[5] || '0',
                              J: cols[6] || '0',
                              S: cols[7] || '0',
-                             C: cols[8] || '0'
+                             C: cols[8] || '0',
+							 URL: cols[9] || '0',
+						     DATE_VER: cols[10] || '0',
+						 	 RATE: cols[11] || '0'
                          }
                      });
                  }
@@ -374,6 +377,9 @@
                  <td>${item.points.J}</td>
                  <td>${item.points.S}</td>
                  <td>${item.points.C}</td>
+				 <td>${item.points.URL}</td>
+				 <td>${item.points.DATE_VER}</td>
+				 <td>${item.points.RATE}</td>
              </tr>`;
          });
          
