@@ -322,14 +322,14 @@
                          name: cols[1] || '-',
                          date: cols[2] || '-',
                          description: cols[3] || '-',
+						 E: cols[4] || '0',
+                    	 W: cols[5] || '0',
+                         J: cols[6] || '0',
+                         S: cols[7] || '0',
+                         C: cols[8] || '0',
+						 URL: cols[9] || '0',
+						 DATE_VER: cols[10] || '0',
                          points: {
-                             E: cols[4] || '0',
-                             W: cols[5] || '0',
-                             J: cols[6] || '0',
-                             S: cols[7] || '0',
-                             C: cols[8] || '0',
-							 URL: cols[9] || '0',
-						     DATE_VER: cols[10] || '0',
 						 	 RATE: pasrefloat (cols[11]) || '0'
                          }
                      });
@@ -373,13 +373,13 @@
                  <td>${escapeHtml(item.name)}</td>
                  <td>${escapeHtml(item.date)}</td>
                  <td>${escapeHtml(item.description.substring(0, 50))}</td>
-                 <td>${item.points.E}</td>
-                 <td>${item.points.W}</td>
-                 <td>${item.points.J}</td>
-                 <td>${item.points.S}</td>
-                 <td>${item.points.C}</td>
-				 <td>${item.points.URL}</td>
-				 <td>${item.points.DATE_VER}</td>
+                 <td>${item.E}</td>
+                 <td>${item.W}</td>
+                 <td>${item.J}</td>
+                 <td>${item.S}</td>
+                 <td>${item.C}</td>
+				 <td>${item.URL}</td>
+				 <td>${item.DATE_VER}</td>
 				 <td>${item.points.RATE}</td>
              </tr>`;
          });
