@@ -121,37 +121,7 @@
      .blockchain-info a:hover {
          text-decoration: underline;
      }
-	 .point-value {
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
-    color: #2c5282;
-    text-align: right;
-}
 
-.table-wrapper {
-    overflow-x: auto;
-    margin-top: 20px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-
-th, td {
-    padding: 10px 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #555;
-    position: sticky;
-    top: 0;
-}
  </style>
  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
 </head>
@@ -361,7 +331,7 @@ async function loadData() {
                         C: cols[8] || 0
                     },
                     // Дополнительные поля (без изменений, но URL и DATE_VER лучше не преобразовывать)
-                   url: cols[9] || 0 ,
+                   url: cols[9] || 0,
                    dateVer: cols[10] || 0,
                     // ИСПРАВЛЕНО: RATE тоже может быть дробным
                     rate: parseFloat(cols[11]) || 0
