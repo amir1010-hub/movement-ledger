@@ -354,15 +354,15 @@ async function loadData() {
                     description: cols[3] || '-',
                     points: {
                         // ИСПРАВЛЕНО: parseFloat для дробных значений
-                        E: parseInt(cols[4]) || 0,
-                        W: parseInt(cols[5]) || 0,
-                        J: parseInt(cols[6]) || 0,
-                        S: parseInt(cols[7]) || 0,
-                        C: parseInt(cols[8]) || 0
+                        E: cols[4] || 0,
+                        W: cols[5] || 0,
+                        J: cols[6] || 0,
+                        S: cols[7] || 0,
+                        C: cols[8] || 0
                     },
                     // Дополнительные поля (без изменений, но URL и DATE_VER лучше не преобразовывать)
-                    url: cols[9] || '',
-                    dateVer: cols[10] || '',
+                   url: cols[9] || 0 ,
+                   dateVer: cols[10] || 0,
                     // ИСПРАВЛЕНО: RATE тоже может быть дробным
                     rate: parseFloat(cols[11]) || 0
                 });
@@ -423,6 +423,9 @@ function displayTable(data) {
             <td class="point-value">${item.points.J.toFixed(10)}</td>
             <td class="point-value">${item.points.S.toFixed(10)}</td>
             <td class="point-value">${item.points.C.toFixed(10)}</td>
+			<td class="point-value">${item.points.url.toFixed(10)}</td>
+            <td class="point-value">${item.points.datever.toFixed(10)}</td>
+            <td class="point-value">${item.points.rate.toFixed(10)}</td>
         </tr>`;
     });
     
