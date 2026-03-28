@@ -366,7 +366,7 @@
          html += '</tr></thead><tbody>';
          
          data.slice(0, 100).forEach(item => {
-             html += <tr>
+             html += '<tr>
                  <td>${escapeHtml(item.id)}</td>
                  <td>${escapeHtml(item.name)}</td>
                  <td>${escapeHtml(item.date)}</td>
@@ -379,7 +379,7 @@
 				 <td>${item.URL}</td>
 				 <td>${item.DATE_VER}</td>
 				 <td>${item.RATE}</td>
-             </tr>;
+             </tr>';
          });
          
          html += '</tbody></table>';
